@@ -1,0 +1,120 @@
+<style>
+*{
+    font-family:"Courier New";
+    font-size:10px;
+}
+pre{
+    background:#cecece;
+    display:inline-block;
+    font-size:20px;
+    line-height:.5em;
+}
+</style>
+<pre id="screen">
+
+</pre>
+
+<script>
+
+    // const DOT = "   ·-=≈+∙≡®©%@■▀▄#░▒▐▌▓█"
+    const DOT = "░"
+    const width = 32
+    const height = 32
+    let screen = Array(height).fill(0).map(x => Array(width).fill(0));
+
+    const put = (x, y) => screen[y][x] = DOT;
+    // const put = (x, y) => console.log(x,y)
+
+    const line = (x1, y1, x2, y2) => {
+        // delta
+        let dx = x2 - x1
+        let dy = y2 - y1
+        // slope
+        let m = dy / dx
+
+        // y-intercept (look for line equation)
+        let b = y1 - (m * x1)
+
+        // vertical line
+        if (dx == 0){
+            dy = Math.abs(dy)+1
+            let y = Math.max(y1, y2);
+            while(dy--){
+                put(x1, y--)
+            }
+            return
+        }
+        // steep line
+        if (Math.abs(m) > 1){
+            dy = Math.abs(dy)+1;
+            let y = Math.max(y1, y2)
+            while(dy--){
+                let x = Math.round((y-b)/m)
+
+                put(x, y--)
+            }
+            return
+        }
+        // shallow line
+        dx = Math.abs(dx)+1
+
+        let x = Math.max(x1,x2)
+        while(dx--){
+            let y = Math.round(m*x+b)
+            put(x--,y)
+        }
+
+    }
+
+
+    let vx=1
+    let vy=2
+    let lp = [2,1,1,13]
+    const compute = () => {
+        screen = Array(height).fill(0).map(x => Array(width).fill(0));
+         lp[0] += vx
+         lp[3] += vy
+         if (lp[0] > width-1){
+            lp[0] = width-1
+            vx=-vx
+         }
+         if (lp[0] < 0){
+            lp[0] = 0
+            vx=-vx
+         }
+         if (lp[3] > height-1){
+            lp[3] = height-1
+            vy=-vy
+         }
+         if (lp[3] < 0){
+            lp[3] = 0
+            vy=-vy
+         }
+        line(lp[0], lp[1], lp[2], lp[3])
+    }
+
+    const draw = () => {
+        let buffer = "";
+
+        for (let y = 0; y < height; y++) {
+            buffer += screen[y].map(x => x?DOT:" ").join('')
+            buffer += "\n"
+        }
+        document.getElementById("screen").innerText = buffer;
+    }
+
+    const fps = 20
+    const skip = 60/fps
+    let tick = skip
+    const main = () => {
+        tick++;
+        if (tick > skip){
+            tick = 0
+            draw()
+            compute()
+        }
+
+        window.requestAnimationFrame(main);
+    }
+    main()
+</script>

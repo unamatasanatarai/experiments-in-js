@@ -1,0 +1,96 @@
+<style>
+*{
+    font-family:"Courier New";
+    font-size:10px;
+}
+pre{
+    background:#cecece;
+    display:inline-block;
+    font-size:11px;
+    line-height:.5em;
+}
+</style>
+<pre id="screen">
+
+</pre>
+
+<script>
+
+    const DEAD = " ";
+    const LIVE = "∙";
+    const SHADOW = "·"
+    const width = 90;
+    const height = 90;
+    let screen = Array(height).fill(0).map(x => Array(width).fill(0));
+
+
+
+
+
+    const get = (x, y) => screen[y][x];
+
+    const getNextPos = (x, y) => {
+        if (!get(x, y+1)) return {x:x, y:y+1}
+        if (!get(x+1, y+1)) return {x:x+1, y:1+y}
+        if (!get(x-1, y+1)) return {x:x-1, y:1+y}
+        return {x:x, y:y}
+    }
+
+    const compute = () => {
+
+        for ( let y = height - 2; y >= 0; y--){
+            for ( let x = 0; x < width-1; x++){
+                const alive = get(x, y);
+                if (!alive) continue;
+                let n = getNextPos(x, y)
+                screen[y][x] = 0;
+                screen[n.y][n.x] = 1;
+            }
+        }
+
+        // add more on top
+        w = 1
+        h = 1
+        for (x = 0; x < width-w; x++){
+            let yep = 1*(Math.random()>.98)
+            for (i = 0; i < h; i++){
+                for (s = 0; s<w;s++){
+                    if(get(x+s,i)) continue
+                    screen[i][x+s] = yep
+                }
+
+            }
+        }
+        //destroy bottom
+        if (Math.random() > .97){
+            screen[height-1] = screen[height-1].map(x => 0)
+        }
+    }
+
+    const draw = () => {
+        let buffer = "";
+
+        for (let y = 0; y < height; y++) {
+            buffer += screen[y].map(x => x ? LIVE : DEAD).join('')
+            buffer += "\n"
+        }
+        document.getElementById("screen").innerText = buffer;
+    }
+
+    const fps = 30
+    const skip = 60/fps
+    let tick = skip
+    const main = () => {
+        tick++;
+        if (tick > skip){
+            tick = 0
+            draw()
+            compute()
+        }
+
+        window.requestAnimationFrame(main);
+    }
+
+    draw()
+    main()
+</script>

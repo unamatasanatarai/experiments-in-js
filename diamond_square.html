@@ -1,0 +1,160 @@
+<style>
+*{
+    font-family:"Courier New";
+    font-size:10px;
+}
+pre{
+    background:#cecece;
+    display:inline-block;
+    font-size:20px;
+    line-height:.5em;
+}
+</style>
+<pre id="screen">
+
+</pre>
+
+<script>
+
+    let palette = "   ·-=≈+∙≡®©%@■▀▄#░▒▐▌▓█"
+    palette += palette.split("").reverse().join("");
+    const max = palette.length
+    let rand = max;
+    // 2^n+1
+    const base_width = 32
+    const width = 2 * base_width + 1;
+    const height = 2 * base_width + 1;
+
+
+    let screen = Array(height).fill(0).map(x => Array(width).fill(0));
+    screen[0][0] = Math.floor(Math.random()*max)
+    screen[0][width-1] = Math.floor(Math.random()*max)
+    screen[height-1][width-1] = Math.floor(Math.random()*max)
+    screen[height-1][0] = Math.floor(Math.random()*max)
+    // screen[0][0] = 8
+    // screen[0][width-1] = 6
+    // screen[height-1][width-1] = 4
+    // screen[height-1][0] = 2
+
+    const get = (x, y) => screen[y][x];
+
+    const diamond = (cx, cy, reach) => {
+        let total = 0;
+        let count = 0;
+        // top left
+        if (cx - reach >= 0 && cy - reach >= 0){
+            total += get(cx - reach, cy - reach)
+            count ++
+        }
+        // top right
+        if (cx + reach < width && cy - reach >= 0){
+            total += get(cx + reach, cy - reach)
+            count ++
+        }
+        // bottom right
+        if (cx + reach < width && cy + reach < height){
+            total += get(cx + reach, cy + reach)
+            count ++
+        }
+        // bottom right
+        if (cx - reach >= 0 && cy + reach < height){
+            total += get(cx - reach, cy + reach)
+            count ++
+        }
+
+        return {x:cx, y:cy, value:Math.round((total/count)+randomate(-rand, rand)), total, count}
+    }
+
+    const square = (x, y, chunk_size) => {
+        let total = 0;
+        let count = 0;
+        // top
+        if (y - chunk_size >=0){
+            total += get(x, y - chunk_size)
+            count ++;
+        }
+        // right
+        if (x + chunk_size < width){
+            total += get(x+chunk_size, y)
+            count ++
+        }
+        // bottom
+        if (y + chunk_size < height){
+            total += get(x, y+chunk_size)
+            count ++
+        }
+        // right
+        if (x - chunk_size >=0){
+            total += get(x - chunk_size, y)
+            count ++
+        }
+        return {x:x, y:y, value:Math.round((total/count)+randomate(-rand, rand)), total, count}
+    }
+
+    const randomate = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
+
+    const prepare = () => {
+        let chunk_size = base_width
+        let x = 0
+        let y = 0
+
+        while(chunk_size >= 1){
+            for(y = chunk_size; y < height; y += chunk_size*2){
+                for(x = chunk_size; x < width-1; x += chunk_size*2){
+                    // console.log(x, y)
+                    let d = diamond(x, y, chunk_size)
+                    screen[d.y][d.x] = d.value
+                    // top
+                    let s = square(x, y-chunk_size, chunk_size)
+                    screen[s.y][s.x] = s.value
+                    // right
+                    s = square(x+chunk_size, y, chunk_size)
+                    screen[s.y][s.x] = s.value
+                    // bottom
+                    s = square(x, y+chunk_size, chunk_size)
+                    screen[s.y][s.x] = s.value
+                    // left
+                    s = square(x-chunk_size, y, chunk_size)
+                    screen[s.y][s.x] = s.value
+                }
+            }
+            chunk_size /= 2;
+            rand /= 2
+        }
+
+    }
+
+    const compute = () => {
+        // screen = screen.map( y => y.map( x => (x+1)%max))
+        palette += palette[0];
+        palette = palette.substr(1)
+    }
+
+    const draw = () => {
+        let buffer = "";
+
+        for (let y = 0; y < height; y++) {
+            buffer += screen[y].map(x => palette[x]).join('')
+            buffer += "\n"
+        }
+        document.getElementById("screen").innerText = buffer;
+    }
+
+    const fps = 30
+    const skip = 60/fps
+    let tick = skip
+    const main = () => {
+        tick++;
+        if (tick > skip){
+            tick = 0
+            draw()
+            compute()
+        }
+
+        window.requestAnimationFrame(main);
+    }
+    // compute()
+    // draw()
+    prepare()
+    main()
+</script>

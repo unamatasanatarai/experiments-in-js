@@ -1,0 +1,77 @@
+<style>
+*{
+    font-family:"Courier New";
+    font-size:10px;
+}
+pre{
+    background:#cecece;
+    display:inline-block;
+    font-size:20px;
+    line-height:.5em;
+}
+</style>
+<pre id="screen">
+
+</pre>
+
+<script>
+
+    const flame = " ·-=≈+∙≡®©%@■▀▄#░▒▐▌▓█"
+    const max = flame.length
+    const width = 90;
+    const height = 60;
+
+    let screen = Array(height).fill(0).map(x => Array(width).fill(0));
+
+    const get = (x, y) => screen[y][x];
+
+    const burn = (x, y) => {
+        let n = get(x,y)
+        n += get(x-1,y)
+        n += get(x+1,y)
+        // n += get(x,y-1)
+        return Math.floor(n/3)
+    }
+
+    const compute = () => {
+        const buffer = Array(height).fill(1).map(x=>Array(width).fill(0));
+        for ( let y = height - 1; y > 0; y--){
+            for ( let x = 1; x < width-1; x++){
+                buffer[y-1][x] = burn(x,y)
+            }
+        }
+        // add kindling
+        for (x = 0; x < width; x++){
+
+            buffer[height-1][x] = Math.round(Math.random()*max)
+        }
+
+        screen = buffer;
+    }
+
+    const draw = () => {
+        let buffer = "";
+// console.table(screen)
+        for (let y = 0; y < height; y++) {
+            buffer += screen[y].map(x => flame[x]).join('')
+            buffer += "\n"
+        }
+        document.getElementById("screen").innerText = buffer;
+    }
+
+    const fps = 40
+    const skip = 60/fps
+    let tick = skip
+    const main = () => {
+        tick++;
+        if (tick > skip){
+            tick = 0
+            draw()
+            compute()
+        }
+
+        window.requestAnimationFrame(main);
+    }
+    draw()
+    main()
+</script>

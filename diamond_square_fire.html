@@ -1,0 +1,197 @@
+<style>
+*{
+    font-family:"Courier New";
+    font-size:10px;
+}
+pre{
+    background:#cecece;
+    display:inline-block;
+    font-size:20px;
+    line-height:.5em;
+}
+</style>
+<pre id="screen">
+
+</pre>
+
+<script>
+
+    let palette = " ·-=≈+∙≡®© ·-=≈+∙≡®©"
+    const flame = " ·-=≈+∙≡®©%@■▀▄#░▒▐▌▓█"
+    const max_flame = flame.length
+
+    // palette += palette.split("").reverse().join("");
+    const max = palette.length
+    let rand = max;
+    // 2^n+1
+    const base_width = 16
+    const width = 2 * base_width + 1;
+    const height = 2 * base_width + 1;
+
+
+    let f_buffer = Array(height).fill(0).map(x => Array(width).fill(0));
+    let ds_buffer = Array(height).fill(0).map(x => Array(width).fill(0));
+    // ds_buffer[0][0] = Math.max(Math.floor(Math.random()*max), Math.round(max/2))
+    // ds_buffer[0][width-1] = Math.max(Math.floor(Math.random()*max), Math.round(max/2))
+    // ds_buffer[height-1][width-1] = Math.max(Math.floor(Math.random()*max), Math.round(max/2))
+    // ds_buffer[height-1][0] = Math.max(Math.floor(Math.random()*max), Math.round(max/2))
+    ds_buffer[0][0] = 19
+    ds_buffer[0][width-1] = 18
+    ds_buffer[height-1][width-1] = 10
+    ds_buffer[height-1][0] = 8
+
+
+    const get = (x, y) => ds_buffer[y][x];
+    const getf = (x, y) => f_buffer[y][x];
+
+    const burn = (x, y) => {
+        let n = getf(x-1,y)
+        n    += getf(x,y)
+        n    += getf(x+1,y)
+        n    += getf(x,y-1)
+        n    += getf(x,y+1)
+        // n += getf(x,y-1)
+        return Math.floor(n/5)
+    }
+
+    const diamond = (cx, cy, reach) => {
+        let total = 0;
+        let count = 0;
+        // top left
+        if (cx - reach >= 0 && cy - reach >= 0){
+            total += get(cx - reach, cy - reach)
+            count ++
+        }
+        // top right
+        if (cx + reach < width && cy - reach >= 0){
+            total += get(cx + reach, cy - reach)
+            count ++
+        }
+        // bottom right
+        if (cx + reach < width && cy + reach < height){
+            total += get(cx + reach, cy + reach)
+            count ++
+        }
+        // bottom right
+        if (cx - reach >= 0 && cy + reach < height){
+            total += get(cx - reach, cy + reach)
+            count ++
+        }
+
+        return {x:cx, y:cy, value:Math.round((total/count)+randomate(-rand, rand)), total, count}
+    }
+
+    const square = (x, y, chunk_size) => {
+        let total = 0;
+        let count = 0;
+        // top
+        if (y - chunk_size >=0){
+            total += get(x, y - chunk_size)
+            count ++;
+        }
+        // right
+        if (x + chunk_size < width){
+            total += get(x+chunk_size, y)
+            count ++
+        }
+        // bottom
+        if (y + chunk_size < height){
+            total += get(x, y+chunk_size)
+            count ++
+        }
+        // right
+        if (x - chunk_size >=0){
+            total += get(x - chunk_size, y)
+            count ++
+        }
+        return {x:x, y:y, value:Math.round((total/count)+randomate(-rand, rand)), total, count}
+    }
+
+    const randomate = (min, max) => Math.floor(Math.random() * (max - min + 1) + min)
+
+    const prepare = () => {
+        let chunk_size = base_width
+        let x = 0
+        let y = 0
+
+        while(chunk_size >= 1){
+            for(y = chunk_size; y < height; y += chunk_size*2){
+                for(x = chunk_size; x < width-1; x += chunk_size*2){
+                    // console.log(x, y)
+                    let d = diamond(x, y, chunk_size)
+                    ds_buffer[d.y][d.x] = d.value
+                    // top
+                    let s = square(x, y-chunk_size, chunk_size)
+                    ds_buffer[s.y][s.x] = s.value
+                    // right
+                    s = square(x+chunk_size, y, chunk_size)
+                    ds_buffer[s.y][s.x] = s.value
+                    // bottom
+                    s = square(x, y+chunk_size, chunk_size)
+                    ds_buffer[s.y][s.x] = s.value
+                    // left
+                    s = square(x-chunk_size, y, chunk_size)
+                    ds_buffer[s.y][s.x] = s.value
+                }
+            }
+            chunk_size /= 2;
+            rand /= 2
+        }
+
+    }
+gtick=0;
+    const compute = () => {
+gtick++
+        ds_buffer.push(ds_buffer.shift())
+        if(gtick < 6){
+            f_buffer = ds_buffer
+            return
+        }
+        const buffer = Array(height).fill(0).map(x=>Array(width).fill(0));
+
+        // add kindling
+        for (x = 0; x < width; x++){
+            f_buffer[height-1][x] = max_flame-1
+            f_buffer[height-2][x] = max_flame-1
+            f_buffer[height-3][x] = max_flame-1
+        }
+        // burn
+        for ( let y = height - 2; y > 1; y--){
+            for ( let x = 2; x < width-2; x++){
+                // buffer[y-1][x] = Math.max(0, Math.floor(burn(x,y)))
+                buffer[y-1][x] = Math.max(0, Math.floor(burn(x,y) - (get(x,y)/5)))
+            }
+        }
+
+        f_buffer = buffer;
+    }
+
+    const draw = () => {
+        let buffer = "";
+
+        for (let y = 0; y < height; y++) {
+            //buffer += ds_buffer[y].map(x => palette[x]).join('')
+            buffer += f_buffer[y].map(x => flame[x]).join('')
+            buffer += "\n"
+        }
+        document.getElementById("screen").innerText = buffer;
+    }
+
+    const fps = 24
+    const skip = 60/fps
+    let tick = skip
+    const main = () => {
+        tick++;
+        if (tick > skip){
+            tick = 0
+            draw()
+            compute()
+        }
+
+        window.requestAnimationFrame(main);
+    }
+    // compute()
+    // draw()
+    prepare()
+    main()
+</script>

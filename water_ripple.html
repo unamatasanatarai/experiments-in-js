@@ -1,0 +1,89 @@
+<style>
+*{
+    font-family:"Courier New";
+    font-size:10px;
+}
+pre{
+    background:#cecece;
+    display:inline-block;
+    font-size:20px;
+    line-height:1em;
+}
+</style>
+<pre id="screen">
+
+</pre>
+
+<script>
+
+    const flame = " ····---==≈≈≈+∙∙∙≡■▀▄#░░▒▒▐▐▌▌▓▓██"
+    const max = flame.length*4
+    const width = 80;
+    const height = 20;
+
+    let prev = Array(height*width).fill(0);
+    let disp = Array(height*width).fill(0);
+
+    vh = Math.floor(height/2)
+    hh = Math.floor(width/2)
+    disp[hh + vh*width] = max;
+    //prev[hh + vh*width] = max;
+
+    const get = (x, y) => screen[y][x];
+    const set = (x, y, what) => screen[y][x] = what;
+
+    const damping = .9;
+    pframe = 0
+    const compute = () => {
+	[prev, disp] = [disp, prev];
+	for(i = width; i < height*width - width; i++){
+		disp[i] = (
+		    prev[i-1] +
+		    prev[i+1] +
+		    prev[i-width] +
+		    prev[i+width] ) / 
+		    2 - disp[i]
+		
+	       //disp[i] = Math.min(max, disp[i] * damping)
+		disp[i] = Math.max(0, disp[i])
+	       disp[i] = disp[i] * damping
+	}
+        // make it rain?
+		    pframe++;
+		    if (pframe > 2){
+	disp[Math.floor(Math.random()*(width-2)*(height-2))+width] = max;
+		    pframe = 0;}
+
+    }
+
+    const draw = () => {
+	buffer = [];
+	i = 0;
+	while (i < width*height){
+		//buffer.push(disp.slice(i, i+width).join(" "))
+		buffer.push(disp.slice(i, i+width).map(x => flame[Math.min(max, Math.floor(x))]).join(""))
+		i+=width;
+	}
+    //console.log(buffer[vh])
+        document.getElementById("screen").innerText = buffer.join("\n");
+    }
+
+    const fps = 40
+    const skip = 60/fps
+    let tick = skip
+    let running = true;
+    const main = () => {
+		    if(running){
+        tick++;
+        if (tick > skip){
+            tick = 0
+            draw()
+            compute()
+        }
+			    }
+
+        window.requestAnimationFrame(main);
+    }
+    draw()
+    main()
+</script>

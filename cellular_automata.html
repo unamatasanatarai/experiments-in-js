@@ -1,0 +1,117 @@
+<style>
+*{
+    font-family:"Courier New";
+    font-size:10px;
+}
+pre{
+    background:#cecece;
+    display:inline-block;
+    font-size:8px;
+    line-height:.5em;
+    letter-spacing:-1px;
+}
+</style>
+<pre id="screen">
+
+</pre>
+
+<script>
+    // must be ODD
+    const width = 157;
+    const height = 150;
+    const center = Math.floor(width/2);
+    const rules = [];
+    rules[1] = "000";
+    rules[2] = "001";
+    rules[4] = "010";
+    rules[8] = "011";
+    rules[16] = "100";
+    rules[32] = "101";
+    rules[64] = "110";
+    rules[128] = "111";
+    const mods = [128, 64, 32, 16, 8, 4, 2, 1];
+    const screen = Array(height).fill(1).map(x=>Array(width).fill(0));
+    const palette = " ■"
+    screen[0][center] = 1;
+
+    let rule = 182;
+    const picked = {};
+    for(let h = 0; h < rules.length; h++){
+            picked[rules[h]] = 0;
+        }
+    const prepare = () => {
+        let i = 0;
+        while(i < mods.length && rule){
+            remainder = rule % mods[i];
+            if (remainder == rule){
+                i++;
+                continue;
+            }
+            if (remainder < rule){
+                picked[rules[mods[i]]] = 1;
+            }
+            rule = remainder;
+            i++;
+        }
+    }
+
+    const get = (x, y) => screen[y][x];
+    const put = (x, y, what) => screen[y][x] = what;
+
+    let iteration = 0;
+    let changed = false;
+    const compute = () => {
+
+            changed = false;
+        if (iteration >= height-1) return
+            changed = true;
+
+        for(i = 0; i < width; i++){
+
+            let total = "";
+
+            if (i == 0){
+                total += get(width-1, iteration)
+            }else{
+                total += get(i-1, iteration);
+            }
+            total += get(i, iteration)
+
+            if (i == width-1){
+                total += get(0, iteration)
+            }else{
+                total += get(i+1, iteration)
+            }
+            put(i, iteration+1, picked[total]);
+        }
+        iteration++;
+    }
+
+    const draw = () => {
+            if(!changed) return;
+        let buffer = "";
+
+        for (let y = 0; y < height; y++) {
+            buffer += screen[y].map(x => palette[x]).join('')
+            buffer += "\n"
+        }
+        document.getElementById("screen").innerText = buffer;
+    }
+
+    const fps = 60
+    const skip = 60/fps
+    let tick = skip
+    const main = () => {
+        tick++;
+        draw()
+        if (tick > skip){
+            tick = 0
+
+            compute()
+        }
+
+        window.requestAnimationFrame(main);
+    }
+    prepare();
+    main()
+</script>
