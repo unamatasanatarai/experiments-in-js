@@ -25,7 +25,7 @@ void calc(char* out){
 }
 
 int main() {
-    // +1 for NUL in chars arrays
+    // +1 for NULL in chars arrays
     char *out = malloc(sizeof(char)*w*h+1);
     if (out == NULL) {printf("I FAILED"); exit(1);};
     fputs(invisible, stdout);
