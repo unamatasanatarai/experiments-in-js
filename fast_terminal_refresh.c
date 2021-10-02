@@ -33,8 +33,8 @@ int main() {
     for (i=0;i<100000;i++){
         calc(out);
         fputs(reset, stdout);
-        fputs(out, stdout);
-        //fwrite(out, sizeof(char), w*h, stdout);
+        //fputs(out, stdout);
+        fwrite(out, sizeof(char), w*h, stdout);
         fflush(stdout);
     }
     fputs(visible, stdout);

@@ -10,6 +10,32 @@ pre{
     line-height:.5em;
     letter-spacing:-1px;
 }
+
+a {
+box-shadow:inset 0px -3px 7px 0px #29bbff;
+background:linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
+background-color:#2dabf9;
+border-radius:3px;
+border:1px solid #0b0e07;
+display:inline-block;
+cursor:pointer;
+color:#ffffff;
+font-family:Arial;
+font-size:15px;
+padding:2px 11px;
+text-decoration:none;
+text-shadow:0px 1px 0px #263666;
+}
+a:hover {
+background:linear-gradient(to bottom, #0688fa 5%, #2dabf9 100%);
+background-color:#0688fa;
+}
+a:active {
+position:relative;
+top:1px;
+}
+
+
 </style>
 <pre id="screen">
 
@@ -34,7 +60,7 @@ pre{
     const palette = " ■"
     screen[0][center] = 1;
 
-    let rule = 182;
+    let rule = window.location.search ? window.location.search.replace("?r=", "") : 182;
     const picked = {};
     for(let h = 0; h < rules.length; h++){
             picked[rules[h]] = 0;
@@ -115,3 +141,16 @@ pre{
     prepare();
     main()
 </script>
+
+<nav>
+    <script>
+    let rrrrrr = window.location.search ? window.location.search.replace("?r=", "") : 182;
+            document.write("<a href='?r="+(rrrrrr-1)+"'>poprzedni</a>")
+            document.write("<a href='?r="+(rrrrrr+1)+"'>następny</a>")
+        </script>
+        <br><br>
+    <script>
+        for(i = 1; i <256; i++)
+            document.write("<a href='?r="+i+"'>"+i+"</a>")
+    </script>
+</nav>
