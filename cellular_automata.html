@@ -1,41 +1,54 @@
+<nav>
+    <script>
+        let rrrrrr = window.location.search ? window.location.search.replace("?r=", "") * 1 : 182;
+        document.write("<a href='?r=" + (rrrrrr - 1) + "'>poprzedni</a> | ")
+        document.write("<a href='?r=" + (rrrrrr + 1) + "'>następny</a>")
+    </script>
+    <br>
+</nav>
 <style>
-*{
-    font-family:"Courier New";
-    font-size:10px;
-}
-pre{
-    background:#cecece;
-    display:inline-block;
-    font-size:8px;
-    line-height:.5em;
-    letter-spacing:-1px;
-}
+    nav {
+        position: fixed
+    }
 
-a {
-box-shadow:inset 0px -3px 7px 0px #29bbff;
-background:linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
-background-color:#2dabf9;
-border-radius:3px;
-border:1px solid #0b0e07;
-display:inline-block;
-cursor:pointer;
-color:#ffffff;
-font-family:Arial;
-font-size:15px;
-padding:2px 11px;
-text-decoration:none;
-text-shadow:0px 1px 0px #263666;
-}
-a:hover {
-background:linear-gradient(to bottom, #0688fa 5%, #2dabf9 100%);
-background-color:#0688fa;
-}
-a:active {
-position:relative;
-top:1px;
-}
+    * {
+        font-family: "Courier New";
+        font-size: 10px;
+    }
 
+    pre {
+        background: #cecece;
+        display: inline-block;
+        font-size: 8px;
+        line-height: .5em;
+        letter-spacing: -1px;
+    }
 
+    a {
+        box-shadow: inset 0px -3px 7px 0px #29bbff;
+        background: linear-gradient(to bottom, #2dabf9 5%, #0688fa 100%);
+        background-color: #2dabf9;
+        border-radius: 3px;
+        border: 1px solid #0b0e07;
+        display: inline-block;
+        cursor: pointer;
+        color: #ffffff;
+        font-family: Arial;
+        font-size: 15px;
+        padding: 2px 11px;
+        text-decoration: none;
+        text-shadow: 0px 1px 0px #263666;
+    }
+
+    a:hover {
+        background: linear-gradient(to bottom, #0688fa 5%, #2dabf9 100%);
+        background-color: #0688fa;
+    }
+
+    a:active {
+        position: relative;
+        top: 1px;
+    }
 </style>
 <pre id="screen">
 
@@ -43,9 +56,9 @@ top:1px;
 
 <script>
     // must be ODD
-    const width = 157;
-    const height = 150;
-    const center = Math.floor(width/2);
+    const width = 407;
+    const height = 3300;
+    const center = Math.floor(width / 2);
     const rules = [];
     rules[1] = "000";
     rules[2] = "001";
@@ -56,24 +69,24 @@ top:1px;
     rules[64] = "110";
     rules[128] = "111";
     const mods = [128, 64, 32, 16, 8, 4, 2, 1];
-    const screen = Array(height).fill(1).map(x=>Array(width).fill(0));
+    const screen = Array(height).fill(1).map(x => Array(width).fill(0));
     const palette = " ■"
     screen[0][center] = 1;
 
     let rule = window.location.search ? window.location.search.replace("?r=", "") : 182;
     const picked = {};
-    for(let h = 0; h < rules.length; h++){
-            picked[rules[h]] = 0;
-        }
+    for (let h = 0; h < rules.length; h++) {
+        picked[rules[h]] = 0;
+    }
     const prepare = () => {
         let i = 0;
-        while(i < mods.length && rule){
+        while (i < mods.length && rule) {
             remainder = rule % mods[i];
-            if (remainder == rule){
+            if (remainder == rule) {
                 i++;
                 continue;
             }
-            if (remainder < rule){
+            if (remainder < rule) {
                 picked[rules[mods[i]]] = 1;
             }
             rule = remainder;
@@ -88,33 +101,30 @@ top:1px;
     let changed = false;
     const compute = () => {
 
-            changed = false;
-        if (iteration >= height-1) return
-            changed = true;
+        while (iteration < height - 1) {
+            for (i = 0; i < width; i++) {
 
-        for(i = 0; i < width; i++){
+                let total = "";
 
-            let total = "";
+                if (i == 0) {
+                    total += get(width - 1, iteration)
+                } else {
+                    total += get(i - 1, iteration);
+                }
+                total += get(i, iteration)
 
-            if (i == 0){
-                total += get(width-1, iteration)
-            }else{
-                total += get(i-1, iteration);
+                if (i == width - 1) {
+                    total += get(0, iteration)
+                } else {
+                    total += get(i + 1, iteration)
+                }
+                put(i, iteration + 1, picked[total]);
             }
-            total += get(i, iteration)
-
-            if (i == width-1){
-                total += get(0, iteration)
-            }else{
-                total += get(i+1, iteration)
-            }
-            put(i, iteration+1, picked[total]);
+            iteration++;
         }
-        iteration++;
     }
 
     const draw = () => {
-            if(!changed) return;
         let buffer = "";
 
         for (let y = 0; y < height; y++) {
@@ -125,12 +135,12 @@ top:1px;
     }
 
     const fps = 60
-    const skip = 60/fps
+    const skip = 60 / fps
     let tick = skip
     const main = () => {
         tick++;
         draw()
-        if (tick > skip){
+        if (tick > skip) {
             tick = 0
 
             compute()
@@ -139,18 +149,14 @@ top:1px;
         window.requestAnimationFrame(main);
     }
     prepare();
-    main()
+    //main()
+    compute();
+    draw();
 </script>
 
 <nav>
     <script>
-    let rrrrrr = window.location.search ? window.location.search.replace("?r=", "") : 182;
-            document.write("<a href='?r="+(rrrrrr-1)+"'>poprzedni</a>")
-            document.write("<a href='?r="+(rrrrrr+1)+"'>następny</a>")
-        </script>
-        <br><br>
-    <script>
-        for(i = 1; i <256; i++)
-            document.write("<a href='?r="+i+"'>"+i+"</a>")
+        for (i = 1; i < 256; i++)
+            document.write("<a href='?r=" + i + "'>" + i + "</a>")
     </script>
 </nav>
